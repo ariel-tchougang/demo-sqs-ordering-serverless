@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS SQS Ordering Demo - Serverless</title>
+  <link href="./css/tailwind.min.css" rel="stylesheet">
+  <link href="./css/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-8 flex justify-between items-center">
+      <div>
+        <h1 class="text-3xl font-bold text-center text-blue-700">AWS SQS Ordering Demo</h1>
+        <p class="text-center text-gray-600 mt-2">Serverless Edition - Compare message ordering between Standard and FIFO queues</p>
+      </div>
+      <div class="flex items-center">
+        <span class="mr-2 text-gray-700">Light</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="darkModeToggle">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="ml-2 text-gray-700">Dark</span>
+      </div>
+    </header>
+
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center space-x-4">
+          <div>
+            <label for="queueType" class="block text-sm font-medium text-gray-700 mb-1">Queue Type</label>
+            <select id="queueType" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+              <option value="STANDARD">STANDARD</option>
+              <option value="FIFO">FIFO</option>
+            </select>
+          </div>
+          
+          <div>
+            <label for="colorPicker" class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+            <input type="color" id="colorPicker" value="#C0392B" class="h-10 w-10 rounded border border-gray-300">
+          </div>
+          
+          <div>
+            <label for="lineWidth" class="block text-sm font-medium text-gray-700 mb-1">Line Width</label>
+            <input type="range" id="lineWidth" min="1" max="20" value="5" class="w-32">
+          </div>
+        </div>
+        
+        <div class="flex space-x-3">
+          <button id="startBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+            Start
+          </button>
+          <button id="clearBtn" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+            Clear
+          </button>
+        </div>
+      </div>
+      
+      <div class="mt-4">
+        <div id="status" class="text-sm text-gray-600 hidden">
+          <div class="flex items-center">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+            <span id="statusText">Processing...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="flex flex-col">
+        <h2 class="text-lg font-medium mb-2 text-gray-700">Draw Here</h2>
+        <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+          <canvas id="canvas" class="w-full touch-none"></canvas>
+        </div>
+      </div>
+      
+      <div class="flex flex-col">
+        <h2 class="text-lg font-medium mb-2 text-gray-700">Result</h2>
+        <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+          <canvas id="clone" class="w-full"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <footer class="mt-12 text-center text-gray-500 text-sm">
+      <p>AWS SQS Ordering Demo - Serverless Version</p>
+    </footer>
+  </div>
+
+  <script src="./js/darkMode.js"></script>
+  <script src="./js/client.js" type="module"></script>
+</body>
+</html>

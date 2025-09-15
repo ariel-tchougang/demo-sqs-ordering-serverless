@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SQS Ordering Demo - Serverless Version
+
+Parameters:
+  StandardQueueName:
+    Type: String
+    Default: sqs-ordering-standard
+  FifoQueueName:
+    Type: String
+    Default: sqs-ordering-fifo
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    Environment:
+      Variables:
+        STANDARD_QUEUE_URL: !Ref StandardQueue
+        FIFO_QUEUE_URL: !Ref FifoQueue
+
+Resources:
+  # SQS Queues
+  StandardQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref StandardQueueName
+      VisibilityTimeout: 60
+
+  FifoQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${FifoQueueName}.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      VisibilityTimeout: 60
+
+  # API Gateway
+  SqsOrderingApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'POST,GET,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Requested-With'"
+        AllowOrigin: "'*'"
+        AllowCredentials: false
+
+  # Lambda Functions
+  SendToSqsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/src/send-to-sqs/
+      Handler: index.handler
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt StandardQueue.QueueName
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt FifoQueue.QueueName
+      Events:
+        SendApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref SqsOrderingApi
+            Path: /send
+            Method: post
+
+  ReceiveFromSqsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/src/receive-from-sqs/
+      Handler: index.handler
+      Policies:
+        - SQSPollerPolicy:
+            QueueName: !GetAtt StandardQueue.QueueName
+        - SQSPollerPolicy:
+            QueueName: !GetAtt FifoQueue.QueueName
+      Events:
+        ReceiveApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref SqsOrderingApi
+            Path: /receive
+            Method: post
+
+  ConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/src/config/
+      Handler: index.handler
+      Environment:
+        Variables:
+          STANDARD_QUEUE_URL: !Ref StandardQueue
+          FIFO_QUEUE_URL: !Ref FifoQueue
+          POLLING_INTERVAL: 2000
+          DELAY_BEFORE_CALLING_RECEIVE: 3000
+          SEGMENT_SIZE: 25
+      Events:
+        ConfigApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref SqsOrderingApi
+            Path: /config
+            Method: get
+
+  # S3 Bucket for static website
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
+
+Outputs:
+  ApiGatewayUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${SqsOrderingApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiUrl"
+
+  WebsiteUrl:
+    Description: S3 Website URL
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Export:
+      Name: !Sub "${AWS::StackName}-WebsiteUrl"
+
+  StandardQueueUrl:
+    Description: Standard SQS Queue URL
+    Value: !Ref StandardQueue
+
+  FifoQueueUrl:
+    Description: FIFO SQS Queue URL
+    Value: !Ref FifoQueue

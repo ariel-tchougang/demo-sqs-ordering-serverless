@@ -1,0 +1,104 @@
+/* Custom styles for AWS SQS Ordering Demo */
+
+canvas {
+  touch-action: none;
+}
+
+/* Form element styles */
+select {
+  border-width: 2px !important;
+  border-color: #d1d5db !important;
+  appearance: auto;
+}
+
+/* Dark mode styles */
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --border-color: #4b5563;
+  --input-bg: #1e293b;
+  --input-text: #f8fafc;
+}
+
+.dark body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark .bg-white {
+  background-color: var(--bg-secondary);
+}
+
+.dark .text-gray-600, .dark .text-gray-700 {
+  color: var(--text-secondary);
+}
+
+.dark .border-gray-300 {
+  border-color: var(--border-color);
+}
+
+/* Fix for select element in dark mode */
+.dark select {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border-color: var(--border-color) !important;
+  border-width: 2px !important;
+}
+
+.dark option {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+}
+
+/* Fix for range input in dark mode */
+.dark input[type="range"] {
+  background-color: var(--input-bg);
+}
+
+/* Toggle button styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #2563eb;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(30px);
+}
